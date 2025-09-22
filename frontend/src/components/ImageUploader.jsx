@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function ImageUploader({onClassify}) {
+function ImageUploader({onClassify,isLoading}) {
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
 
@@ -44,12 +44,12 @@ function ImageUploader({onClassify}) {
 
       <button
         onClick={handleClassify}
-        disabled={!image}
+        disabled={!image || isLoading}
         className="w-full mt-6 bg-blue-600 text-white font-bold py-3 px-4 rounded-lg
                    hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed
                    transition-colors duration-300"
       >
-        Classify Breed
+       {isLoading ? 'Classifying..' :'Classify Breed'}
       </button>
     </div>
   );
