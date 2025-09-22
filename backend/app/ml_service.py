@@ -1,51 +1,52 @@
 import tensorflow as tf
 import numpy as np
 
-# --- 1. Load all three models when the application starts ---
+# --- 1. Load the single, unified model ---
 try:
-    SPECIES_MODEL = tf.keras.models.load_model('models/species_model.h5')
-    COW_MODEL = tf.keras.models.load_model('models/cow_model.h5')
-    BUFFALO_MODEL = tf.keras.models.load_model('models/buffalo_model.h5')
-    print("✅ Models loaded successfully!")
+    BREED_MODEL = tf.keras.models.load_model('models/breed_model.h5')
+    print("✅ Unified breed model loaded successfully!")
 except Exception as e:
-    print(f"❌ Error loading models: {e}")
+    print(f"❌ Error loading model: {e}")
 
-# --- 2. Define the class labels ---
-# This MUST match the output of `train_data.class_indices` from your notebook
-SPECIES_LABELS = ["Cow", "Buffalo"]
-COW_BREED_LABELS = ['Sahiwal', 'fresian', 'kankarej', 'Red sindhi', 'Tharparkar']
-BUFFALO_BREED_LABELS = ['Khundi', 'Murrah', 'Nagpuri', 'Neli ravi', 'Surti']
+# --- 2. Define the class labels and the species mapping dictionary ---
+# This MUST match the `class_names` from your training script
+CLASS_NAMES = ['Hallikar', 'Kankrej', 'Murrah', 'Nili_Ravi', 'Red_Sindhi', 'Toda']
 
+BREED_TO_SPECIES = {
+    "Murrah": "Buffalo",
+    "Nili_Ravi": "Buffalo",
+    "Toda": "Buffalo",
+    "Hallikar": "Cow",
+    "Kankrej": "Cow",
+    "Red_Sindhi": "Cow"
+}
 
 def get_prediction(processed_image):
     """
-    Takes a preprocessed image and returns the full classification results.
+    Takes a preprocessed image and returns the classification results
+    using the single, unified model.
     """
     
-    # --- Stage 1: Predict Species ---
-    species_pred_raw = SPECIES_MODEL.predict(processed_image)[0]
-    species_index = np.argmax(species_pred_raw)
-    predicted_species = SPECIES_LABELS[species_index]
-
-    # --- Stage 2: Predict Breed based on Species ---
-    if predicted_species == "Cow":
-        breed_pred_raw = COW_MODEL.predict(processed_image)[0]
-        breed_labels = COW_BREED_LABELS
-    else: # It's a Buffalo
-        breed_pred_raw = BUFFALO_MODEL.predict(processed_image)[0]
-        breed_labels = BUFFALO_BREED_LABELS
-        
+    # --- Stage 1: Predict the breed directly ---
+    breed_pred_raw = BREED_MODEL.predict(processed_image)[0]
+    
     # Get top 3 breed predictions
     top_3_indices = np.argsort(breed_pred_raw)[-3:][::-1]
     
+    # --- Stage 2: Look up the species and format results ---
+    top_breed_index = top_3_indices[0]
+    top_breed_name = CLASS_NAMES[top_breed_index]
+    
+    predicted_species = BREED_TO_SPECIES.get(top_breed_name, "Unknown") # Safely get species
+
     top_prediction = {
-        "breed": breed_labels[top_3_indices[0]],
-        "confidence": round(float(breed_pred_raw[top_3_indices[0]]) * 100, 2)
+        "breed": top_breed_name,
+        "confidence": round(float(breed_pred_raw[top_breed_index]) * 100, 2)
     }
 
     other_predictions = [
         {
-            "breed": breed_labels[i],
+            "breed": CLASS_NAMES[i],
             "confidence": round(float(breed_pred_raw[i]) * 100, 2)
         } for i in top_3_indices[1:]
     ]
