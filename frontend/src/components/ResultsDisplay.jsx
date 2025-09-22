@@ -1,5 +1,5 @@
 import React from 'react';
-// 1. Import chart components
+// Import chart components (no changes here)
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -11,7 +11,7 @@ import {
   Legend,
 } from 'chart.js';
 
-// 2. Register the components Chart.js needs to work
+// Register the components (no changes here)
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -21,94 +21,97 @@ ChartJS.register(
   Legend
 );
 
-
 function ResultsDisplay({ results }) {
   if (!results) {
     return null;
   }
 
-  // 3. Prepare the data for the bar chart
+  // --- Chart Configuration ---
+
+  // 1. Prepare data for the bar chart
   const allPredictions = [results.top_prediction, ...results.other_predictions];
-  
   const chartData = {
-    labels: allPredictions.map(p => p.breed), // e.g., ['Red Sindhi', 'Sahiwal', 'Fresian']
+    labels: allPredictions.map(p => p.breed),
     datasets: [
       {
-        label: 'Confidence Score',
-        data: allPredictions.map(p => p.confidence), // e.g., [99.58, 0.42, 0.0]
+        label: 'Confidence Score (%)',
+        data: allPredictions.map(p => p.confidence),
         backgroundColor: [
-            'rgba(54, 162, 235, 0.6)', // Blue for the top prediction
-            'rgba(255, 159, 64, 0.6)', // Orange
-            'rgba(153, 102, 255, 0.6)', // Purple
+          'rgba(54, 162, 235, 0.7)', // Stronger blue for the top prediction
+          'rgba(255, 159, 64, 0.7)',
+          'rgba(153, 102, 255, 0.7)',
         ],
-        borderColor: [
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 159, 64, 1)',
-            'rgba(153, 102, 255, 1)',
-        ],
+        borderColor: 'rgba(0, 0, 0, 0.2)',
         borderWidth: 1,
       },
     ],
   };
 
+  // 2. Updated chart options for a VERTICAL bar chart
   const chartOptions = {
-    indexAxis: 'y', // This makes the bar chart horizontal
-    elements: {
-      bar: {
-        borderWidth: 2,
-      },
-    },
+    // indexAxis: 'y', // <-- REMOVED this line to make the chart vertical
     responsive: true,
     plugins: {
       legend: {
-        display: false, // We don't need a legend for a single dataset
+        position: 'top',
       },
       title: {
         display: true,
-        text: 'Top 3 Breed Predictions',
-        font: { size: 16 }
+        text: 'Confidence Score Distribution',
+        font: { size: 18 }
       },
     },
     scales: {
-        x: {
-            ticks: {
-                callback: function(value) {
-                    return value + '%' // Add a '%' sign to the x-axis ticks
-                }
-            }
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return value + '%'; // Add '%' to the y-axis
+          }
         }
+      }
     }
   };
 
-
   return (
-    <div className="bg-white p-8 rounded-lg shadow-md w-full mt-8 animate-fade-in">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Classification Results</h2>
+    <div className="bg-white p-6 md:p-8 rounded-lg shadow-md w-full mt-8 animate-fade-in">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Classification Results</h2>
       
-      {/* Container for the new layout (Chart on left, details on right) */}
-      <div className="grid md:grid-cols-2 gap-8 items-center">
+      {/* Main grid for Species, Top Prediction, and Heatmap */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+        {/* Card 1: Species Identification */}
+        <div className="bg-gray-50 p-6 rounded-lg shadow-sm text-center">
+          <p className="text-md text-gray-500 font-semibold uppercase tracking-wider">Species</p>
+          <p className="text-5xl font-bold text-gray-800 mt-2">{results.species}</p>
+        </div>
+
+        {/* Card 2: Top Breed Prediction */}
+        <div className="bg-blue-100 p-6 rounded-lg shadow-sm text-center border border-blue-300">
+          <p className="text-md text-blue-600 font-semibold uppercase tracking-wider">Top Breed</p>
+          <p className="text-3xl font-bold text-blue-800 mt-2">{results.top_prediction.breed}</p>
+        </div>
         
-        {/* Left Side: Bar Chart */}
-        <div>
+        {/* Card 3: Confidence Score */}
+        <div className="bg-gray-50 p-6 rounded-lg shadow-sm text-center">
+          <p className="text-md text-gray-500 font-semibold uppercase tracking-wider">Confidence</p>
+          <p className="text-5xl font-bold text-gray-800 mt-2">{results.top_prediction.confidence}%</p>
+        </div>
+
+      </div>
+
+      {/* Grid for Chart and Heatmap */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+        
+        {/* Left Side: Vertical Bar Chart */}
+        <div className="bg-gray-50 p-4 rounded-lg">
           <Bar options={chartOptions} data={chartData} />
         </div>
 
-        {/* Right Side: Details and Heatmap */}
-        <div>
-           {/* Top Prediction Highlight */}
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg text-center">
-            <p className="text-gray-600">Top Prediction:</p>
-            <p className="text-3xl font-bold text-blue-700">{results.top_prediction.breed}</p>
-            <p className="text-xl text-gray-800 mt-1">
-              Confidence: <span className="font-semibold">{results.top_prediction.confidence}%</span>
-            </p>
-          </div>
-          
-          {/* Heatmap */}
-          <div className="mt-4">
-            <h3 className="text-lg font-semibold text-gray-700 mb-2 text-center">AI Focus (Heatmap)</h3>
-            <img src={results.heatmap_image} alt="Heatmap" className="w-full rounded-md shadow-sm" />
-          </div>
+        {/* Right Side: Heatmap Visualization */}
+        <div className="text-center">
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">AI Focus (Heatmap)</h3>
+          <img src={results.heatmap_image} alt="Heatmap" className="w-full rounded-md shadow-lg" />
         </div>
       </div>
     </div>

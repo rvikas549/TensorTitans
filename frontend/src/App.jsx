@@ -5,6 +5,7 @@ import ResultsDisplay from './components/ResultsDisplay'; // 1. Import the new c
 
 // This is mock data that mimics your Python backend's JSON response
 const MOCK_RESULTS = {
+  
   top_prediction: {
     breed: "Red Sindhi",
     confidence: 99.58
