@@ -61,11 +61,6 @@ function ResultsDisplay({ results }) {
         <div className="bg-gray-50 p-4 rounded-lg">
           <Bar options={chartOptions} data={chartData} />
         </div>
-        <div className="text-center">
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">AI Focus (Heatmap)</h3>
-          {/* Heatmap image is not yet in backend response, using placeholder */}
-          <img src="https://i.imgur.com/g6y4V0s.jpeg" alt="Heatmap placeholder" className="w-full rounded-md shadow-lg" />
-        </div>
       </div>
 
       <div className="mt-12 border-t pt-8">
